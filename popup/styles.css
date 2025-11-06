@@ -32,3 +32,12 @@
     outline: none;
     box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3);
   }
+  .button-done {
+    background: linear-gradient(135deg, #4CAF50, #45a049) !important;
+    border-color: #45a049 !important;
+}
+
+  .button-done:hover {
+    background: linear-gradient(135deg, #5cbf60, #4CAF50) !important;
+    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4) !important;
+}
