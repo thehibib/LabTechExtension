@@ -142,6 +142,20 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
             });
         return true;
     }
+    if (request.type === "INCREASE_PO") {
+
+        chrome.storage.local.get(["PO"], (result) => {
+            const oldPO = result.PO ?? 0;
+            const newPO = parseInt(oldPO) + 1;
+
+            chrome.storage.local.set({ PO: newPO }, () => {
+                sendResponse({ PO: newPO });
+            });
+        });
+
+        // keep message channel open
+        return true;
+    }
 });
 
 

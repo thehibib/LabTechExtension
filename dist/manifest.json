@@ -11,7 +11,7 @@
     "permissions": ["storage","tabs","identity"],
     "host_permissions": ["https://api.quartzy.com/*"],
     "oauth2": {
-        "client_id": "912334417501-o566qc4paeca6hm21c9ibgf93bn1cc90.apps.googleusercontent.com",
+        "client_id": "912334417501-0phr1fpfvjq2kcs0go7hsof8ehg8gu2s.apps.googleusercontent.com",
         "scopes": [
             "https://www.googleapis.com/auth/spreadsheets"
         ]

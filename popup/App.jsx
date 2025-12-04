@@ -27,6 +27,7 @@ function InitialPop(){
         chrome.storage.local.get(["PO"],(result)=>{
             if (result.PO){
                 setPOnum(result.PO)
+                console.log('PO WORKED',result.PO, POnum)
             } 
         })
 
@@ -41,10 +42,14 @@ function InitialPop(){
                 {POnum}
             </text> */}
             <button className="button">
-                {/* TODO: have the extension say the name of the page! */}
-                Scrape Page
+                {`PO# ${POnum}`}
             </button>
-            <button className="button" onClick={sendQuartzyOrders}>
+
+            {/* <button className="button">
+                // TODO: have the extension say the name of the page!
+                Scrape Page
+            </button> */}
+            <button className="button" onClick={() => sendQuartzyOrders(setPOnum)}>
                 Get Quartzy Orders
             </button>
             <button className="button" onClick={() => navigate("/settings")}>
@@ -74,6 +79,8 @@ function Settings(){
     const [sheetID, setSheetID] = useState("")
     const [geminiKey, setGeminiKey] = useState('');
     
+
+    // TODO: Make it red when there's an error with the information entered (set these values in the get and send functions)
     useEffect(()=>{
         chrome.storage.local.get(["PO", "APIKey", "SpreadSheetID", "SheetID"],(result)=>{
             if (result.PO){
@@ -198,7 +205,7 @@ function changeStorage(user_msg,name){
     }
 }
 // calls service worker to use Quartzy API
-function getQuartzyOrders(){
+export function getQuartzyOrders(){
     return new Promise((resolve) => {
         chrome.runtime.sendMessage(
             {type: "FETCH_QUARTZY"},
@@ -214,7 +221,7 @@ function getQuartzyOrders(){
 }
 //asynchronous, so we use await etc.
 // sends orders to sheets  (uses getQuartzyOrders)
-async function sendQuartzyOrders() {
+export async function sendQuartzyOrders(setPOnum) {
     let orders;
     try {
         orders = await getQuartzyOrders();
@@ -223,23 +230,32 @@ async function sendQuartzyOrders() {
         alert("error fetching orders",e);
         console.error("error fetching orders",e);
     }
-    try {
-        return new Promise((resolve) => {
+    
+    return new Promise((resolve, reject) => {
+        try {
             chrome.runtime.sendMessage(
                 {type: "SEND_QUARTZY",data: orders},
                 (response) => {
                     // TODO ADD SOMEKIND OF FEEDBACK IDK
                     if (response && response.message){
                         alert(response.message);
-                    } 
+                    }
+                    chrome.runtime.sendMessage(
+                        {type: "INCREASE_PO"},
+                        (response) => {
+                            console.log("increased PO to",response.PO)
+                            setPOnum(response.PO)
+                        }
+                    )
                     resolve(response.message);
                 }
             );
-        });
-    }catch (e){
-        alert("error sending orders",e);
-        console.error("error sending orders",e);
-    }
+        }catch (e){
+            alert("error sending orders",e);
+            console.error("error sending orders",e);
+            reject(e) //need to manually reject the Promise
+        }
+    });
 }
 
 export default function App(){
@@ -251,9 +267,5 @@ export default function App(){
                 {/* ADD MORE ROUTES HERE */}
             </Routes>
         </Router>
-        // <div>
-        //     <h1>yo</h1>
-        //     <button>yo press me</button>
-        // </div>
     );
 }
