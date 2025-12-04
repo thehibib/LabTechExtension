@@ -174,6 +174,17 @@ async function QuartzyToSheet(orderData){
         })
     });
 
+    const POforSheets = await new Promise((resolve,reject) => {
+        chrome.storage.local.get(['PO'], (result) => {
+            if (chrome.runtime.lastError){
+                reject(chrome.runtime.lastError)
+            }else{
+                resolve(result.PO)
+            }
+        });
+    });
+
+
     const {SpreadSheetID} = await chrome.storage.local.get(['SpreadSheetID'])
     const {SheetID} = await chrome.storage.local.get(['SheetID'])
     const SPREADSHEET_ID = SpreadSheetID;
@@ -192,7 +203,7 @@ async function QuartzyToSheet(orderData){
             : "",
         order.created_by ? order.created_by.email : "",
         // CHANGE THIS TO BE ACCURATE TO THE DESIRED PO#
-        order.purchase_order_number || "",
+        POforSheets || "",
         order.id
     ]);
     //Order ID MUST BE THE LAST COLUMN
