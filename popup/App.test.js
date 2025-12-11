@@ -54,7 +54,7 @@ describe("Quartzy API logic", () => {
     const result = await sendQuartzyOrders()
 
     expect(result).toBe("Uploaded!")
-    expect(chrome.runtime.sendMessage).toHaveBeenCalledTimes(2)
+    expect(chrome.runtime.sendMessage).toHaveBeenCalledTimes(3)
   })
 })
 

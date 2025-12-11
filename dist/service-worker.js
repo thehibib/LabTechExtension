@@ -1,53 +1,3 @@
-async function checkWebsiteWithAI(url){
-    const { geminiApiKey } = await chrome.storage.local.get(['geminiApiKey']);
-    
-    if (!geminiApiKey) {
-        // console.log("No GeminiAPI key found");
-        return false;
-    }
-
-    try {
-        const response = await fetch(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
-            {
-                method: "POST",
-                headers: {
-                    "x-goog-api-key": geminiApiKey,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    contents: [
-                        {
-                            parts: [
-                                {
-                                    text: `Is this URL for ordering biology or chemistry materials/supplies? Examples include: Quartzy (app.quartzy.com with requests?status[]=PENDING), Flinn Scientific, Fisher Scientific, Sigma-Aldrich. Answer ONLY with the word 'true' or 'false', nothing else. URL: ${url}`
-                                }
-                            ]
-                        }
-                    ]
-                })
-            }
-        );
-
-        const data = await response.json();
-        console.log("Full API response:", data);
-        
-        const result = data.candidates[0].content.parts[0].text.toLowerCase().trim();
-        const decision = result.includes('true');
-        
-        console.log(`AI check for ${url}: ${decision}`);
-        return decision;
-    } catch (error) {
-        console.error("Error using Gemini API:", error);
-        return false;
-    }
-}
-
-
-chrome.tabs.onCreated.addListener((tab) =>{
-    console.log("New tab!",tab)
-});
-
 // Opens the extension automatically when on the order page of recognized URLs
 chrome.tabs.onUpdated.addListener((tabId,changeInfo,tab) => {
     console.log("worked")
@@ -190,6 +140,7 @@ async function QuartzyToSheet(orderData){
     const SPREADSHEET_ID = SpreadSheetID;
     const SHEET_NAME = SheetID;
 
+    console.log(orderData)
 
     const orderRows = orderData.map(order => [
         // THIS IS WHERE WE DECIDE THE FORMATTING OF DATA ENTRY
@@ -202,8 +153,7 @@ async function QuartzyToSheet(orderData){
             ? (parseFloat(order.total_price.amount) / 100).toFixed(2)
             : "",
         order.created_by ? order.created_by.email : "",
-        // CHANGE THIS TO BE ACCURATE TO THE DESIRED PO#
-        POforSheets || "",
+        "NUEVASCIENCE "+ POforSheets || "",
         order.id
     ]);
     //Order ID MUST BE THE LAST COLUMN
@@ -270,4 +220,51 @@ async function QuartzyToSheet(orderData){
 
     const result = await response.json();
     console.log(result);
+}
+
+
+// UNUSED AI IMPLEMENTATION
+async function checkWebsiteWithAI(url){
+    const { geminiApiKey } = await chrome.storage.local.get(['geminiApiKey']);
+    
+    if (!geminiApiKey) {
+        // console.log("No GeminiAPI key found");
+        return false;
+    }
+
+    try {
+        const response = await fetch(
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+            {
+                method: "POST",
+                headers: {
+                    "x-goog-api-key": geminiApiKey,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    contents: [
+                        {
+                            parts: [
+                                {
+                                    text: `Is this URL for ordering biology or chemistry materials/supplies? Examples include: Quartzy (app.quartzy.com with requests?status[]=PENDING), Flinn Scientific, Fisher Scientific, Sigma-Aldrich. Answer ONLY with the word 'true' or 'false', nothing else. URL: ${url}`
+                                }
+                            ]
+                        }
+                    ]
+                })
+            }
+        );
+
+        const data = await response.json();
+        console.log("Full API response:", data);
+        
+        const result = data.candidates[0].content.parts[0].text.toLowerCase().trim();
+        const decision = result.includes('true');
+        
+        console.log(`AI check for ${url}: ${decision}`);
+        return decision;
+    } catch (error) {
+        console.error("Error using Gemini API:", error);
+        return false;
+    }
 }
